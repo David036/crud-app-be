@@ -9,7 +9,7 @@ const userRepository = AppDataSource.getRepository(UserAuth);
 export class AuthController {
   static async signupUser(req: Request, res: Response) {
     const secretKey = "your-secret-key";
-    const { email, password } = req.body;
+    const { email, password } = req.body ;
     if (!email || !password) {
       return res.status(400).json({
         success: false,
