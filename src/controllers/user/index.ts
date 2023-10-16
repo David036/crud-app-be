@@ -10,10 +10,13 @@ export class UserController {
     res: Response<User | unknown>
   ): Promise<void> {
     try {
+      var id = req.body.currentUser.id;
+
       const user = new User();
       user.name = req.body.name;
       user.surname = req.body.surname;
       user.age = req.body.age;
+      user.createdById = id;
       await userRepository.save(user);
       res.status(200).json(user);
     } catch (error) {
@@ -23,7 +26,8 @@ export class UserController {
 
   static async getUsers(req: Request, res: Response) {
     try {
-      const allUsers = await userRepository.find();
+      var id = req.body.currentUser.id;
+      const allUsers = await userRepository.find( {where: {createdById: id} });
       return res.status(200).json({ success: true, data: allUsers });
     } catch (error) {
       res.status(400).json({ error: `${error}` });
