@@ -10,8 +10,7 @@ export class UserController {
     res: Response<User | unknown>
   ): Promise<void> {
     try {
-      var id = req.body.currentUser.id;
-
+      const id = req.body.currentUser.id;
       const user = new User();
       user.name = req.body.name;
       user.surname = req.body.surname;
@@ -26,8 +25,10 @@ export class UserController {
 
   static async getUsers(req: Request, res: Response) {
     try {
-      var id = req.body.currentUser.id;
-      const allUsers = await userRepository.find( {where: {createdById: id} });
+      const id = req.body.currentUser.id;
+      const allUsers = await userRepository.find({
+        where: { createdById: id },
+      });
       return res.status(200).json({ success: true, data: allUsers });
     } catch (error) {
       res.status(400).json({ error: `${error}` });
@@ -81,8 +82,11 @@ export class UserController {
   static async searchUsers(req: Request, res: Response) {
     try {
       const searchValue = req.query?.searchValue;
+      const id = req.body.currentUser.id;
 
-      const allUsers = await userRepository.find();
+      const allUsers = await userRepository.find({
+        where: { createdById: id },
+      });
       if (searchValue) {
         const searchedUsers = allUsers.filter((item) => {
           return Object.values(item)

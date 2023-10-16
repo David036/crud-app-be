@@ -8,6 +8,6 @@ router.post("/create-user",authMiddleware, UserController.createUser);
 router.get("/get-users", authMiddleware,UserController.getUsers);
 router.delete("/remove-user/:id", UserController.removeUser);
 router.put("/update-user/:id", UserController.updateUser);
-router.get("/search-users", UserController.searchUsers);
+router.get("/search-users",authMiddleware, UserController.searchUsers);
 
 export default router;
