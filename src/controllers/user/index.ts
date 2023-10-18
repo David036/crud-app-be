@@ -29,6 +29,8 @@ export class UserController {
 
       const allUsers = await userRepository.find({
         where: { createdById: id },
+        skip: req.body.skip,
+        take: req.body.pageSize,
       });
 
       res.status(200).json({ success: true, data: allUsers });
@@ -87,6 +89,8 @@ export class UserController {
 
       const allUsers = await userRepository.find({
         where: { createdById: id },
+        skip: req.body.skip,
+        take: req.body.pageSize,
       });
 
       if (searchValue) {
