@@ -1,11 +1,14 @@
-import { Request, Response } from 'express';
-import { AppDataSource } from '../../../data_source';
-import { User } from '../../entities/User';
+import { Request, Response } from "express";
+import { AppDataSource } from "../../../data_source";
+import { User } from "../../entities/User";
 
 const userRepository = AppDataSource.getRepository(User);
 
 export class UserController {
-  static async createUser(req: Request, res: Response<User | unknown>): Promise<void> {
+  static async createUser(
+    req: Request,
+    res: Response<User | unknown>
+  ): Promise<void> {
     try {
       const { id } = req.body.currentUser;
       const { name, surname, age } = req.body;
@@ -26,11 +29,12 @@ export class UserController {
   static async getUsers(req: Request, res: Response) {
     try {
       const { id } = req.body.currentUser;
+      const { startIndex, limit } = req.pagination;
 
       const allUsers = await userRepository.find({
         where: { createdById: id },
-        skip: req.body.skip,
-        take: req.body.pageSize,
+        skip: startIndex,
+        take: limit,
       });
 
       res.status(200).json({ success: true, data: allUsers });
@@ -52,7 +56,7 @@ export class UserController {
         await userRepository.remove(userToRemove);
         res.status(200).json(userToRemove);
       } else {
-        res.status(404).json({ error: 'User not found' });
+        res.status(404).json({ error: "User not found" });
       }
     } catch (error) {
       res.status(500).json({ error: `${error}` });
@@ -75,7 +79,7 @@ export class UserController {
         await userRepository.save(userToEdit);
         res.status(200).json({ success: true, data: userToEdit });
       } else {
-        res.status(404).json({ success: false, error: 'User not found' });
+        res.status(404).json({ success: false, error: "User not found" });
       }
     } catch (error) {
       res.status(500).json({ error: `${error}` });
@@ -86,22 +90,34 @@ export class UserController {
     try {
       const searchValue = req.query?.searchValue;
       const { id } = req.body.currentUser;
+      const { startIndex, limit } = req.pagination;
+      console.log(startIndex, limit, ">>>>>>>>");
 
       const allUsers = await userRepository.find({
         where: { createdById: id },
-        skip: req.body.skip,
-        take: req.body.pageSize,
+        skip: startIndex,
+        take: limit,
       });
 
       if (searchValue) {
         const searchedUsers = allUsers.filter((user) => {
           return Object.values(user)
             .map((value) => value.toString().toLowerCase())
-            .some((stringValue) => stringValue.includes(String(searchValue).toLowerCase()));
+            .some((stringValue) =>
+              stringValue.includes(String(searchValue).toLowerCase())
+            );
         });
+
+        console.log(allUsers.length, searchValue);
+
+        // const paginatedUsers = searchedUsers.slice(
+        //   startIndex,
+        //   startIndex + limit
+        // );
 
         res.status(200).json(searchedUsers);
       } else {
+        // const paginatedUsers = allUsers.slice(startIndex, startIndex + limit);
         res.status(200).json(allUsers);
       }
     } catch (error) {
