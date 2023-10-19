@@ -18,6 +18,7 @@ export class UserController {
         user.surname = surname;
         user.age = age;
         user.createdById = id;
+        user.createdDate = new Date();
 
         await userRepository.save(user);
         res.status(201).json(user);
@@ -35,9 +36,10 @@ export class UserController {
 
       const allUsers = await userRepository.find({
         where: { createdById: id },
+        order: { createdDate: "DESC" }
       });
 
-      res.status(200).json({ success: true, data: allUsers });
+      res.status(200).json({ success: true, data: allUsers, count: allUsers.length });
     } catch (error) {
       res.status(400).json({ error: `${error}` });
     }
@@ -79,6 +81,7 @@ export class UserController {
           userToEdit.name = name;
           userToEdit.surname = surname;
           userToEdit.age = age;
+          userToEdit.lastModifiedDate = new Date();
           await userRepository.save(userToEdit);
           res.status(200).json({ success: true, data: userToEdit });
         } else {
@@ -99,6 +102,7 @@ export class UserController {
 
       const allUsers = await userRepository.find({
         where: { createdById: id },
+        order: { createdDate: "DESC" }
       });
 
       if (searchValue) {
@@ -108,9 +112,9 @@ export class UserController {
             .some((stringValue) => stringValue.includes(String(searchValue).toLowerCase()));
         });
 
-        res.status(200).json(searchedUsers);
+        res.status(200).json({ count: searchedUsers.length, data: searchedUsers });
       } else {
-        res.status(200).json(allUsers);
+        res.status(200).json({ count: allUsers.length, data: allUsers });
       }
     } catch (error) {
       res.status(500).json({ error: `${error}` });
