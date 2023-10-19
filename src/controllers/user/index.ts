@@ -102,14 +102,18 @@ export class UserController {
 
       const allUsers = await userRepository.find({
         where: { createdById: id },
-        order: { createdDate: "DESC" }
+        order: { createdDate: 'DESC' },
       });
 
       if (searchValue) {
         const searchedUsers = allUsers.filter((user) => {
-          return Object.values(user)
-            .map((value) => value.toString().toLowerCase())
-            .some((stringValue) => stringValue.includes(String(searchValue).toLowerCase()));
+          return Object.values(user).some((value) => {
+            if (value !== null) {
+              const stringValue = value.toString().toLowerCase();
+              return stringValue.includes(String(searchValue).toLowerCase());
+            }
+            return false;
+          });
         });
 
         res.status(200).json({ count: searchedUsers.length, data: searchedUsers });
