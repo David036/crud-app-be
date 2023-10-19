@@ -91,34 +91,28 @@ export class UserController {
       const searchValue = req.query?.searchValue;
       const { id } = req.body.currentUser;
       const { startIndex, limit } = req.pagination;
-      console.log(startIndex, limit, ">>>>>>>>");
-
-      const allUsers = await userRepository.find({
-        where: { createdById: id },
-        skip: startIndex,
-        take: limit,
-      });
+      let query = userRepository
+        .createQueryBuilder("user")
+        .where("user.createdById = :id", { id });
 
       if (searchValue) {
-        const searchedUsers = allUsers.filter((user) => {
-          return Object.values(user)
-            .map((value) => value.toString().toLowerCase())
-            .some((stringValue) =>
-              stringValue.includes(String(searchValue).toLowerCase())
-            );
-        });
+        query = query.andWhere(
+          "(user.name LIKE :searchValue OR user.age = :age OR user.surname LIKE :searchValue)",
+          {
+            searchValue: `%${searchValue}%`,
+            age: isNaN(Number(searchValue)) ? -1 : Number(searchValue),
+          }
+        );
 
-        console.log(allUsers.length, searchValue);
+        query = query.skip(startIndex).take(limit);
 
-        // const paginatedUsers = searchedUsers.slice(
-        //   startIndex,
-        //   startIndex + limit
-        // );
-
+        const searchedUsers = await query.getMany();
         res.status(200).json(searchedUsers);
       } else {
-        // const paginatedUsers = allUsers.slice(startIndex, startIndex + limit);
-        res.status(200).json(allUsers);
+        query = query.skip(startIndex).take(limit);
+        const searchedUsers = await query.getMany();
+
+        res.status(200).json(searchedUsers);
       }
     } catch (error) {
       res.status(500).json({ error: `${error}` });
