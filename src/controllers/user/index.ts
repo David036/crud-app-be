@@ -10,14 +10,20 @@ export class UserController {
       const { id } = req.body.currentUser;
       const { name, surname, age } = req.body;
 
-      const user = new User();
-      user.name = name;
-      user.surname = surname;
-      user.age = age;
-      user.createdById = id;
+      const userInputValidation = validateUserInput({ name, surname, age });
 
-      await userRepository.save(user);
-      res.status(201).json(user);
+      if (userInputValidation.isValid) {
+        const user = new User();
+        user.name = name;
+        user.surname = surname;
+        user.age = age;
+        user.createdById = id;
+
+        await userRepository.save(user);
+        res.status(201).json(user);
+      } else {
+        res.status(400).json({ error: userInputValidation.errorMessage });
+      }
     } catch (error) {
       res.status(400).json({ error: `${error}` });
     }
@@ -62,18 +68,24 @@ export class UserController {
       const { id } = req.params;
       const { name, surname, age } = req.body;
 
-      const userToEdit = await userRepository.findOneBy({
-        id,
-      });
-
-      if (userToEdit) {
-        userToEdit.name = name;
-        userToEdit.surname = surname;
-        userToEdit.age = age;
-        await userRepository.save(userToEdit);
-        res.status(200).json({ success: true, data: userToEdit });
+      const userInputValidation = validateUserInput({ name, surname, age });
+  
+      if (userInputValidation.isValid) {
+        const userToEdit = await userRepository.findOneBy({
+          id,
+        });
+  
+        if (userToEdit) {
+          userToEdit.name = name;
+          userToEdit.surname = surname;
+          userToEdit.age = age;
+          await userRepository.save(userToEdit);
+          res.status(200).json({ success: true, data: userToEdit });
+        } else {
+          res.status(404).json({ success: false, error: 'User not found' });
+        }
       } else {
-        res.status(404).json({ success: false, error: 'User not found' });
+        res.status(400).json({ error: userInputValidation.errorMessage });
       }
     } catch (error) {
       res.status(500).json({ error: `${error}` });
@@ -104,4 +116,18 @@ export class UserController {
       res.status(500).json({ error: `${error}` });
     }
   }
+}
+
+function validateUserInput(reqBody: any): { isValid: boolean; errorMessage?: string } {
+  const { name, surname, age } = reqBody;
+
+  if (name == null || name == "" || surname == null || surname == "" || age == null) {
+    return { isValid: false, errorMessage: 'Missing required field' };
+  }
+
+  if (typeof age !== 'number' || age < 1) {
+    return { isValid: false, errorMessage: 'Age must be a number greater than or equal to 1' };
+  }
+
+  return { isValid: true };
 }
