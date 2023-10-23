@@ -15,5 +15,11 @@ export class User {
   age!: number;
 
   @Column()
-  createdById!: string; 
+  createdById!: string;
+
+  @Column({ nullable: true })
+  createdDate?: Date;
+
+  @Column({ nullable: true })
+  lastModifiedDate?: Date;
 }
