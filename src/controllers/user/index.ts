@@ -33,7 +33,7 @@ export class UserController {
 
       const allUsers = await userRepository.find({
         where: { createdById: id },
-        skip: startIndex,
+        skip: 0,
         take: limit,
       });
 
@@ -103,13 +103,14 @@ export class UserController {
             age: isNaN(Number(searchValue)) ? -1 : Number(searchValue),
           }
         );
-
-        query = query.skip(startIndex).take(limit);
-
+  
+        query = query.skip(0).take(limit);
+  
         const searchedUsers = await query.getMany();
+  
         res.status(200).json(searchedUsers);
       } else {
-        query = query.skip(startIndex).take(limit);
+        query = query.skip(0).take(limit);
         const searchedUsers = await query.getMany();
 
         res.status(200).json(searchedUsers);
