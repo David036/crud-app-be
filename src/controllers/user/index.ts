@@ -33,11 +33,17 @@ export class UserController {
 
       const allUsers = await userRepository.find({
         where: { createdById: id },
-        skip: 0,
+        skip: startIndex,
         take: limit,
       });
 
-      res.status(200).json({ success: true, data: allUsers });
+      const allUsersCount = await userRepository.count({
+        where: { createdById: id },
+      });
+
+      res
+        .status(200)
+        .json({ success: true, data: allUsers, count: allUsersCount });
     } catch (error) {
       res.status(400).json({ error: `${error}` });
     }
@@ -103,17 +109,21 @@ export class UserController {
             age: isNaN(Number(searchValue)) ? -1 : Number(searchValue),
           }
         );
-  
-        query = query.skip(0).take(limit);
-  
+
+        console.log(startIndex, limit);
+
+        const allUsersCount = await query.getCount();
+        query = query.skip(startIndex).take(limit);
+
         const searchedUsers = await query.getMany();
-  
-        res.status(200).json(searchedUsers);
+        res.status(200).json({ data: searchedUsers, count: allUsersCount });
       } else {
-        query = query.skip(0).take(limit);
+        const allUsersCount = await query.getCount();
+
+        query = query.skip(startIndex).take(limit);
         const searchedUsers = await query.getMany();
 
-        res.status(200).json(searchedUsers);
+        res.status(200).json({ data: searchedUsers, count: allUsersCount });
       }
     } catch (error) {
       res.status(500).json({ error: `${error}` });

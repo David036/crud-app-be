@@ -21,23 +21,15 @@ export const paginationMiddleware = async (
     offset: req.query.offset,
     startIndex: req.query.offset,
   };
-  // const pageParam = req.query.page;
-  // const pageSizeParam = req.query.pageSize;
 
   const startIndex =
     (typeof paginationQuery.startIndex === "string"
       ? parseInt(paginationQuery.startIndex)
-      : 1) || 1;
+      : 0) || 0;
   const limit =
     (typeof paginationQuery.limit === "string"
       ? parseInt(paginationQuery.limit)
       : 10) || 10;
-
-  // req.body.page = page;
-  // req.body.pageSize = pageSize;
-
-  // const skip = (page - 1) * pageSize;
-  // req.body.skip = skip;
 
   req.pagination = {
     limit,
