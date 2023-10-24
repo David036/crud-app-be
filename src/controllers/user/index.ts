@@ -5,10 +5,7 @@ import { User } from "../../entities/User";
 const userRepository = AppDataSource.getRepository(User);
 
 export class UserController {
-  static async createUser(
-    req: Request,
-    res: Response<User | unknown>
-  ): Promise<void> {
+  static async createUser(req: Request, res: Response<User | unknown>): Promise<void> {
     try {
       const { id } = req.body.currentUser;
       const { name, surname, age } = req.body;
@@ -17,11 +14,7 @@ export class UserController {
 
       if (userInputValidation.isValid) {
         const user = new User();
-        user.name = name;
-        user.surname = surname;
-        user.age = age;
-        user.createdById = id;
-        user.createdDate = new Date();
+        Object.assign(user, { name, surname, age, createdById: id, createdDate: new Date() });
 
         await userRepository.save(user);
         res.status(201).json(user);
@@ -38,20 +31,19 @@ export class UserController {
       const { id } = req.body.currentUser;
       const { startIndex, limit } = req.pagination;
 
-      const allUsers = await userRepository.find({
-        where: { createdById: id },
-        order: { createdDate: "DESC"},
-        skip: startIndex,
-        take: limit,
-      });
+      const [allUsers, allUsersCount] = await Promise.all([
+        userRepository.find({
+          where: { createdById: id },
+          order: { createdDate: "DESC" },
+          skip: startIndex,
+          take: limit,
+        }),
+        userRepository.count({
+          where: { createdById: id },
+        }),
+      ]);
 
-      const allUsersCount = await userRepository.count({
-        where: { createdById: id },
-      });
-
-      res
-        .status(200)
-        .json({ success: true, data: allUsers, count: allUsersCount });
+      res.status(200).json({ success: true, data: allUsers, count: allUsersCount });
     } catch (error) {
       res.status(400).json({ error: `${error}` });
     }
@@ -90,10 +82,8 @@ export class UserController {
         });
   
         if (userToEdit) {
-          userToEdit.name = name;
-          userToEdit.surname = surname;
-          userToEdit.age = age;
-          userToEdit.lastModifiedDate = new Date();
+          Object.assign(userToEdit, { name, surname, age, lastModifiedDate: new Date() });
+
           await userRepository.save(userToEdit);
           res.status(200).json({ success: true, data: userToEdit });
         } else {
@@ -109,37 +99,31 @@ export class UserController {
 
   static async searchUsers(req: Request, res: Response) {
     try {
-      const searchValue = req.query?.searchValue;
+      const searchValue = req.query?.searchValue as string;
       const { id } = req.body.currentUser;
       const { startIndex, limit } = req.pagination;
       let query = userRepository
         .createQueryBuilder("user")
         .where("user.createdById = :id", { id })
         .orderBy("user.createdDate", "DESC");
-        
 
-      if (searchValue) {
-        query = query.andWhere(
-          "(user.name LIKE :searchValue OR user.age = :age OR user.surname LIKE :searchValue)",
-          {
-            searchValue: `%${searchValue}%`,
-            age: isNaN(Number(searchValue)) ? -1 : Number(searchValue),
-          }
+      const allUsers = await query.getMany();
+
+      const filteredUsers = allUsers.filter(user => {
+        if (!searchValue) return true;
+
+        const agePattern = new RegExp(searchValue, 'i');
+        return (
+          user.name.includes(searchValue) ||
+          user.surname.includes(searchValue) ||
+          agePattern.test(user.age.toString())
         );
+      });
 
-        const allUsersCount = await query.getCount();
-        query = query.skip(startIndex).take(limit);
+      const allUsersCount = filteredUsers.length;
+      const paginatedUsers = filteredUsers.slice(startIndex, startIndex + limit);
 
-        const searchedUsers = await query.getMany();
-        res.status(200).json({ data: searchedUsers, count: allUsersCount });
-      } else {
-        const allUsersCount = await query.getCount();
-
-        query = query.skip(startIndex).take(limit);
-        const searchedUsers = await query.getMany();
-
-        res.status(200).json({ data: searchedUsers, count: allUsersCount });
-      }
+      res.status(200).json({ data: paginatedUsers, count: allUsersCount });
     } catch (error) {
       res.status(500).json({ error: `${error}` });
     }
@@ -149,7 +133,7 @@ export class UserController {
 function validateUserInput(reqBody: any): { isValid: boolean; errorMessage?: string } {
   const { name, surname, age } = reqBody;
 
-  if (name == null || name == "" || surname == null || surname == "" || age == null) {
+  if (!name || !surname || age == null) {
     return { isValid: false, errorMessage: 'Missing required field' };
   }
 
