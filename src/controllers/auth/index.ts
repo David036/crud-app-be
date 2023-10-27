@@ -9,9 +9,9 @@ const secretKey = 'your-secret-key';
 
 export class AuthController {
   static async signupUser(req: Request, res: Response) {
-    const { email, password } = req.body;
+    const { email, password, phoneNumber } = req.body;
 
-    if (!email || !password) {
+    if (!email || !password || !phoneNumber) {
       return res.status(400).json({
         success: false,
         error: 'Submit all required parameters',
@@ -30,6 +30,8 @@ export class AuthController {
       const user = new UserAuth();
       user.email = email;
       user.password = hashedPassword;
+      user.phoneNumber = phoneNumber;
+      user.isAdmin = false;
       await userRepository.save(user);
 
       const token = jwt.sign({ userId: user.id, email: user.email }, secretKey, {

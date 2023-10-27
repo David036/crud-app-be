@@ -10,4 +10,10 @@ export class UserAuth {
 
   @Column()
   password!: string;
+
+  @Column()
+  isAdmin!: boolean;
+
+  @Column()
+  phoneNumber!: string;
 }
