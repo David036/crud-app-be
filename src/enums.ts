@@ -9,8 +9,23 @@ export enum Size {
   }
 
   export enum AvailabilityStatus {
-    IN_STOCK = 'in_stock',
-    OUT_OF_STOCK = 'out_of_stock',
-    PREORDER = 'preorder',
+    AVAILABLE = 'available',
+    NOT_AVAILABLE = 'not_available',
+    COMING_SOON = 'coming_soon',
+  }
+
+  export enum ProductCategory {
+    BOTTOMS = "bottoms",
+    ACCESSORIES = "accessories",
+    DRESSES = "dresses",
+    OUTWEAR = "outwear",
+    TOPS = "tops",
+    PAJAMAS = "pajamas",
+    FRAGRANCES = "fragrances",
   }
   
+  export enum Collection {
+    NEW_ARRIVALS = "new arrivals",
+    MUST_HAVE = "must have",
+    SALE = "sale",
+  }

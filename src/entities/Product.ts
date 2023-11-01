@@ -1,6 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable } from "typeorm";
-import { AvailabilityStatus } from '../enums';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToMany, JoinTable } from "typeorm";
+import { AvailabilityStatus, ProductCategory, Collection } from '../enums';
 import { Image } from './Image';
+import { SizeAvailability } from './SizeAvailability';
 
 @Entity()
 export class Product {
@@ -13,16 +14,19 @@ export class Product {
   @Column()
   description!: string;
 
-  @Column()
-  category!: string;
+  @Column("enum", { enum: ProductCategory })
+  category!: ProductCategory;
 
-  @Column('simple-array')
-  sizes!: string[]; 
+  @Column("enum", { enum: Collection, array: true })
+  collections!: Collection[];
 
-  @Column()
-  price!: string;
+  @Column("decimal", { precision: 10, scale: 2 })
+  price!: number;
 
-  @Column('enum', { enum: AvailabilityStatus })
+  @OneToMany(() => SizeAvailability, (sizeAvailability) => sizeAvailability.product, { cascade: true })
+  sizeAvailabilities!: SizeAvailability[];
+
+  @Column("enum", { enum: AvailabilityStatus, nullable: true })
   availability_status!: AvailabilityStatus;
 
   @ManyToMany(() => Image, { cascade: true })
@@ -35,9 +39,9 @@ export class Product {
   @Column()
   createdById!: string;
 
-  @Column({ nullable: true })
+  @Column({ type: "timestamp", nullable: true })
   createdDate?: Date;
 
-  @Column({ nullable: true })
+  @Column({ type: "timestamp", nullable: true })
   lastModifiedDate?: Date;
 }

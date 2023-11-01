@@ -11,23 +11,22 @@ export class ProductController {
     res: Response<Product | unknown>
   ): Promise<void> {
     try {
-        const { name, description, category, sizes, price, availability_status, color } = req.body;
-
-        const { id } = req.body.currentUser;
-    
-        const product = new Product();
-        product.name = name;
-        product.description = description;
-        product.category = category;
-        product.sizes = sizes;
-        product.price = price;
-        product.availability_status = availability_status;
-        product.color = color;
-        product.createdById = id;
-        product.createdDate = new Date();
-    
-        await productRepository.save(product);
-        res.status(201).json({ data: product, success: true });
+      const { name, description, category, sizes, price, availability_status, color } = req.body;
+      const { id } = req.body.currentUser;
+  
+      const product = new Product();
+      product.name = name;
+      product.description = description;
+      product.category = category;
+      product.sizeAvailabilities = sizes;
+      product.price = price;
+      product.availability_status = availability_status;
+      product.color = color;
+      product.createdById = id;
+      product.createdDate = new Date();
+  
+      await productRepository.save(product);
+      res.status(201).json({ data: product, success: true });
     } catch (error) {
       res.status(400).json({ error: `${error}` });
     }
