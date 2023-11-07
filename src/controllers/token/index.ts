@@ -2,11 +2,12 @@ import { UserAuth } from "../../entities/UserAuth";
 import { AppDataSource } from "../../../data_source";
 import * as jwt from "jsonwebtoken";
 import { RefreshToken } from "../../entities/RefreshToken";
+import env from "../../utils/constants/env";
 
 const tokenRepository = AppDataSource.getRepository(RefreshToken);
 const userRepository = AppDataSource.getRepository(UserAuth);
-const secretKey = "your-secret-key";
-const refreshSecretKey = "your-secret-key-a";
+const secretKey = env.jwtSecretKey;
+const refreshSecretKey = env.refreshSecretKey;
 
 export class TokenController {
   static async generateToken(user: UserAuth) {

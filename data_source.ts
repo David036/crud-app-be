@@ -1,12 +1,13 @@
 import { DataSource } from "typeorm";
+import env from "./src/utils/constants/env";
 
 export const AppDataSource = new DataSource({
   type: "postgres",
-  host: "localhost",
-  port: 5432,
-  username: "postgres",
-  password: "solicy123",
-  database: "test3",
+  host: env.dbHost,
+  port: +env.dbPort,
+  username: env.dbUsername,
+  password: env.dbPassword,
+  database: env.dbName,
   synchronize: false,
   logging: false,
   migrations: ["src/migrations/*.ts"],
